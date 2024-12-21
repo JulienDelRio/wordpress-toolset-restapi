@@ -28,6 +28,9 @@ require_once TOOLSET_RESTAPI_PATH . 'admin/admin-controller.php';
 // Include utility functions.
 require_once TOOLSET_RESTAPI_PATH . 'includes/utils.php';
 
+// Include REST API functionality.
+require_once TOOLSET_RESTAPI_PATH . 'rest-api/rest_controller.php';
+
 /**
  * Initialize the plugin.
  */
