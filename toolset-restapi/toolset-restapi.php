@@ -22,11 +22,8 @@ define( 'TOOLSET_RESTAPI_VERSION', '0.1.0' );
 define( 'TOOLSET_RESTAPI_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TOOLSET_RESTAPI_URL', plugin_dir_url( __FILE__ ) );
 
-/*
-// Autoload necessary files.
-require_once TOOLSET_RESTAPI_PATH . 'includes/class-rest-controller.php';
-require_once TOOLSET_RESTAPI_PATH . 'includes/helpers.php';
-*/
+// Include admin functionality.
+require_once TOOLSET_RESTAPI_PATH . 'admin/admin-menu.php';
 
 /**
  * Initialize the plugin.
