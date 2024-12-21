@@ -37,14 +37,6 @@ require_once TOOLSET_RESTAPI_PATH . 'rest-api/rest_controller.php';
 function toolset_restapi_init() {
     // Load translations.
     load_plugin_textdomain( 'toolset-restapi', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-
-    /*
-    // Initialize REST API routes.
-    if ( class_exists( 'Toolset_RestAPI_Rest_Controller' ) ) {
-        $rest_controller = new Toolset_RestAPI_Rest_Controller();
-        $rest_controller->register_routes();
-    }
-    */
 }
 add_action( 'init', 'toolset_restapi_init' );
 
@@ -55,14 +47,3 @@ function toolset_restapi_deactivate() {
     // Perform cleanup actions here if necessary.
 }
 register_deactivation_hook( __FILE__, 'toolset_restapi_deactivate' );
-
-/**
- * Cleanup on plugin uninstallation.
- */
-function toolset_restapi_uninstall() {
-    if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-        exit;
-    }
-    // Perform uninstall actions here (e.g., delete options, clean database).
-}
-register_uninstall_hook( __FILE__, 'toolset_restapi_uninstall' );
