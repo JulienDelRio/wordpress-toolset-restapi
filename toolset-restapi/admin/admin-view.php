@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array $saved_post_types  List of saved post types.
  */
 function toolset_restapi_render_admin_page( $custom_post_types, $saved_post_types ) {
+    // Retrieve the saved API base URL or set the default value.
+    $api_base_url = get_option( 'toolset_restapi_base_url', 'toolset-data' );
+
     echo '<div class="wrap">';
     echo '<h1>' . esc_html__( 'Toolset RestAPI', 'toolset-restapi' ) . '</h1>';
 
@@ -50,7 +53,32 @@ function toolset_restapi_render_admin_page( $custom_post_types, $saved_post_type
     echo '</tr>';
     echo '</tfoot>';
     echo '</table>';
+
+    echo '<h2>' . esc_html__( 'Base d\'url de l\'api', 'toolset-restapi' ) . '</h2>';
+    echo '<p>' . esc_html__( 'Les seuls caractères acceptés sont des lettres minuscules, des chiffres et les caractères _ et -.', 'toolset-restapi' ) . '</p>';
+    echo '<input type="text" name="api_base_url" value="' . esc_attr( $api_base_url ) . '" pattern="[a-z0-9_-]+" title="' . esc_attr__( 'Only lowercase letters, numbers, underscores, and hyphens are allowed.', 'toolset-restapi' ) . '" style="width: 300px;">';
+
     echo '<p><input type="submit" class="button-primary" value="' . esc_attr__( 'Save', 'toolset-restapi' ) . '"></p>';
     echo '</form>';
     echo '</div>';
+}
+
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+    // Handle saving selected post types.
+    if ( isset( $_POST['selected_post_types'] ) ) {
+        $selected_post_types = array_map( 'sanitize_text_field', $_POST['selected_post_types'] );
+        update_option( 'toolset_restapi_selected_post_types', $selected_post_types );
+    }
+
+    // Handle saving the API base URL.
+    if ( isset( $_POST['api_base_url'] ) ) {
+        $api_base_url = sanitize_text_field( $_POST['api_base_url'] );
+
+        // Validate the API base URL.
+        if ( preg_match( '/^[a-z0-9_-]+$/', $api_base_url ) ) {
+            update_option( 'toolset_restapi_base_url', $api_base_url );
+        } else {
+            echo '<div class="error"><p>' . esc_html__( 'The API base URL contains invalid characters. Only lowercase letters, numbers, underscores, and hyphens are allowed.', 'toolset-restapi' ) . '</p></div>';
+        }
+    }
 }
