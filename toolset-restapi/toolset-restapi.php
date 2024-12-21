@@ -25,6 +25,9 @@ define( 'TOOLSET_RESTAPI_URL', plugin_dir_url( __FILE__ ) );
 // Include admin functionality.
 require_once TOOLSET_RESTAPI_PATH . 'admin/admin-menu.php';
 
+// Include utility functions.
+require_once TOOLSET_RESTAPI_PATH . 'includes/utils.php';
+
 /**
  * Initialize the plugin.
  */
