@@ -53,6 +53,21 @@ class Toolset_RestAPI_Controller {
                 ),
                 'permission_callback' => '__return_true',
             ));
+
+            // Route for fetching a single item by ID
+            register_rest_route( $base_url . '/' . $version, '/' . $type . '/(?P<id>\d+)', array(
+                'methods'  => 'GET',
+                'callback' => function($request) use ($type) {
+                    return $this->get_custom_type_item_by_id($type, $request);
+                },
+                'args'     => array(
+                    'id' => array(
+                        'required' => true,
+                        'sanitize_callback' => 'absint',
+                    ),
+                ),
+                'permission_callback' => '__return_true',
+            ));
         }
     }
 
@@ -140,6 +155,33 @@ class Toolset_RestAPI_Controller {
         $response->header('X-WP-TotalPages', $total_pages);
 
         return $response;
+    }
+
+    /**
+     * Get a single item of a custom post type by ID.
+     *
+     * @param string $type The custom post type.
+     * @param WP_REST_Request $request The REST request.
+     * @return WP_REST_Response
+     */
+    public function get_custom_type_item_by_id($type, $request) {
+        $id = $request->get_param('id');
+
+        // Verify the post exists and matches the type
+        $post = get_post($id);
+        if (!$post || $post->post_type !== $type || $post->post_status !== 'publish') {
+            return new WP_REST_Response(array('message' => 'Item not found.'), 404);
+        }
+
+        // Prepare the response
+        $item = array(
+            'id'    => $post->ID,
+            'title' => get_the_title($post),
+            'link'  => get_permalink($post),
+            'content' => apply_filters('the_content', $post->post_content),
+        );
+
+        return new WP_REST_Response($item, 200);
     }
 }
 
