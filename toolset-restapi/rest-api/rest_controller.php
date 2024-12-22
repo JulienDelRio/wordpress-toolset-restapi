@@ -29,8 +29,28 @@ class Toolset_RestAPI_Controller {
             register_rest_route( $base_url . '/' . $version, '/' . $type . '/', array(
                 'methods'  => 'GET',
                 'callback' => function($request) use ($type) {
-                    return $this->get_custom_type_items_dynamic($type);
+                    return $this->get_custom_type_items_dynamic($type, $request);
                 },
+                'args'     => array(
+                    'page'    => array(
+                        'default' => 1,
+                        'sanitize_callback' => 'absint',
+                    ),
+                    'per_page' => array(
+                        'default' => 10,
+                        'sanitize_callback' => 'absint',
+                    ),
+                    'order'   => array(
+                        'default' => 'DESC',
+                        'validate_callback' => function($param) {
+                            return in_array(strtoupper($param), array('ASC', 'DESC'));
+                        },
+                    ),
+                    'orderby' => array(
+                        'default' => 'date',
+                        'sanitize_callback' => 'sanitize_text_field',
+                    ),
+                ),
                 'permission_callback' => '__return_true',
             ));
         }
@@ -65,24 +85,37 @@ class Toolset_RestAPI_Controller {
     }
 
     /**
-     * Get all items of a custom post type dynamically.
+     * Get all items of a custom post type dynamically with pagination and sorting.
      *
      * @param string $type The custom post type.
+     * @param WP_REST_Request $request The REST request.
      * @return WP_REST_Response
      */
-    public function get_custom_type_items_dynamic($type) {
+    public function get_custom_type_items_dynamic($type, $request) {
         // Check if the type is allowed
         $selected_post_types = get_option('toolset_restapi_selected_post_types', array());
         if (!in_array($type, $selected_post_types)) {
             return new WP_REST_Response(array('message' => 'Custom type not allowed.'), 403);
         }
 
+        // Fetch parameters
+        $page = $request->get_param('page');
+        $per_page = $request->get_param('per_page');
+        $order = $request->get_param('order');
+        $orderby = $request->get_param('orderby');
+
         // Fetch posts of the specified type
         $query = new WP_Query(array(
             'post_type'      => $type,
-            'posts_per_page' => -1,
+            'posts_per_page' => $per_page,
+            'paged'          => $page,
             'post_status'    => 'publish',
+            'order'          => $order,
+            'orderby'        => $orderby,
         ));
+
+        $total_posts = $query->found_posts;
+        $total_pages = $query->max_num_pages;
 
         if (!$query->have_posts()) {
             return new WP_REST_Response(array('message' => 'No items found.'), 404);
@@ -102,7 +135,11 @@ class Toolset_RestAPI_Controller {
         // Restore global post data
         wp_reset_postdata();
 
-        return new WP_REST_Response($items, 200);
+        $response = new WP_REST_Response($items, 200);
+        $response->header('X-WP-Total', $total_posts);
+        $response->header('X-WP-TotalPages', $total_pages);
+
+        return $response;
     }
 }
 
